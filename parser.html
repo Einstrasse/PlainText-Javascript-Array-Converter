@@ -1,0 +1,164 @@
+<!doctype html>
+<html>
+	<head>
+		<title>	Parser </title>
+	</head>
+
+	<body>
+		<font color="red"><h2>Plain Text to Javascript Array Forward/Reverse Parser</h2></font>
+		<h2>Input</h2>
+		<button onclick="init_upper()">Clear Inputs </button>
+		<button onclick="rev_parse()">Reverse Parse</button>
+		<textarea id="input" style="width:100%;height:400px;" ></textarea>
+
+		<br />
+		<h3>Input should not include ' (single quotation expression) !! </h3>
+		<button onclick='process()'>Processing by Line</button><button onclick='character()'>Process by Character</button> <button onclick='init_under()'> clear</button>
+		<br />
+		<h2>Output</h2>
+		<textarea id="output" style="width:100%;height:400px;"></textarea>
+
+
+<script>
+	var input = document.getElementById('input');
+	var output  = document.getElementById('output');
+
+function process() {
+	var rawData = input.value;
+
+	if(rawData.includes("'")){
+		alert("Please extract ' mark in input");
+	} else {
+		var arrByNewLine = rawData.split('\n');
+		var dataStream = '[';
+		for(var i=0 ;i < arrByNewLine.length; i++){
+			dataStream += '\''+arrByNewLine[i]+'\\n\'';
+			if(i < arrByNewLine.length -1 ){
+				dataStream += ',';
+			}
+		}
+		dataStream += '];';
+		output.value = dataStream;
+	}
+}
+function init_under(){
+	output.value = "";
+}
+function init_upper(){
+	input.value = "";
+}
+function rev_parse() {
+	var raw_arr = output.value;
+	raw_arr = raw_arr.slice(1,-2)
+	var dataStream = "";
+	var state = 0;
+	var len = raw_arr.length;
+	try{
+		for(var i=0; i < len ; i++){
+			if(state === 0){
+				if(raw_arr[i] === '\''){
+					state = 1;
+					continue;
+				} else {
+					throw "State 0 - '이 아닌 값이 들어옴"
+				}
+			}else if(state === 1){
+			//상태 1일때
+				if(raw_arr[i] === '\\'){
+				//1에서 2로 가는 경우
+					if(i+1 < len && raw_arr[i+1] === 'n'){
+						dataStream += '\n';
+						i++;
+						continue;
+					} else if(i+1 < len && raw_arr[i+1] === 't'){
+						dataStream += '\t';
+						i++;
+						continue;
+					} else if(i+1 < len && raw_arr[i+1] === '\''){
+						dataStream += '\'';
+						i++;
+						continue;
+					} else if(i+1 < len && raw_arr[i+1] === '\"'){
+						dataStream += '\"';
+						i++;
+						continue;
+					} else if(i+1 < len && raw_arr[i+1] ==='\\'){
+						dataStream += '\\';
+						i++;
+						continue;
+					} else if (i+1 < len && raw_arr[i+1] === '\,'){
+						dataStream += '\,';
+						i++;
+						continue;
+					} else {
+						dataStream += '\\';
+						state = 2;
+						continue;
+					}
+				} else if(raw_arr[i] === '\''){
+				//1에서 3으로 가는 경우
+					state = 3;
+					continue;
+				} else{
+				//1에서 1로 가는 경우
+					dataStream += raw_arr[i];
+					continue;
+				}
+				
+			} else if(state === 2) {
+			//상태 2일때
+				dataStream += raw_arr[i];
+				state = 1;
+				continue;
+			} else if(state === 3){
+			//상태 3일때
+				if(raw_arr[i] === '\,')
+				{
+					state = 0;
+					continue;
+				}
+			}
+		}
+	} catch (e) {
+		alert(e.message)
+		console.log(e.message)
+	}
+
+	input.value = dataStream;
+
+}
+
+function character() {
+	var rawData = input.value;
+	var dataStream = '[';
+
+		var arrByCharacter = rawData.split("");
+		for(var i=0; i <arrByCharacter.length; i++) {
+			if(arrByCharacter[i] === '\n')//개행문자 개행으로
+				arrByCharacter[i] = '\\n';
+			else if(arrByCharacter[i] === '\"')//quotation을 quotation으로
+				arrByCharacter[i] =  '\"';
+			else if(arrByCharacter[i] === '\;')//세미콜론을 세미콜론으로
+				arrByCharacter[i] = '\;';
+			else if(arrByCharacter[i] === '\\')// 백슬래쉬를 백슬래쉬로
+				arrByCharacter[i] = '\\\\';
+			else if(arrByCharacter[i] === '\t')//탭을 탭으로
+				arrByCharacter[i] = '\\t'
+			else if(arrByCharacter[i] === '\'')
+				arrByCharacter[i] = '\\\''
+			dataStream += '\''+arrByCharacter[i]+'\'';
+			if(i < arrByCharacter.length - 1){
+				dataStream += ',';
+			}
+		}
+		dataStream += '];';
+		output.value = dataStream;
+	//}
+}
+
+</script>
+
+	</body>
+
+</html>
+
